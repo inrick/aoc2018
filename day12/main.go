@@ -18,10 +18,6 @@ func main() {
 			init[i] = 1
 		}
 	}
-	initIxs := make([]int, len(init))
-	for i := range initIxs {
-		initIxs[i] = i
-	}
 
 	sc.Scan() // empty line in between
 
@@ -48,15 +44,14 @@ func main() {
 
 	// a
 	state := make([]byte, len(init))
-	ixs := make([]int, len(initIxs))
 	copy(state, init)
-	copy(ixs, initIxs)
+	startIx := 0
 
 	for gen := 0; gen < 20; gen++ {
 		N := len(state)
 		// If any of the endpoints contain pots we probably need to grow the state
 		if state[0]|state[1]|state[2]|state[N-1]|state[N-2]|state[N-3] > 0 {
-			state, ixs = grow(state, ixs)
+			state, startIx = grow(state, startIx)
 		}
 		oldState := make([]byte, len(state))
 		copy(oldState, state)
@@ -67,22 +62,21 @@ func main() {
 	sum := 0
 	for i := range state {
 		if state[i] == 1 {
-			sum += ixs[i]
+			sum += startIx + i
 		}
 	}
 	fmt.Printf("a) %d\n", sum)
 
 	// b
 	state = make([]byte, len(init))
-	ixs = make([]int, len(initIxs))
 	copy(state, init)
-	copy(ixs, initIxs)
+	startIx = 0
 
 NextGen:
 	for gen := 0; ; gen++ {
 		N := len(state)
 		if state[0]|state[1]|state[2]|state[N-1]|state[N-2]|state[N-3] > 0 {
-			state, ixs = grow(state, ixs)
+			state, startIx = grow(state, startIx)
 		}
 		oldState := make([]byte, len(state))
 		copy(oldState, state)
@@ -103,18 +97,15 @@ NextGen:
 				continue NextGen
 			}
 		}
-		// Reset indices to what they "should" have been if this was the steady
-		// initial state...
-		for i := range ixs {
-			ixs[i] -= gen + 1
-		}
+		// Reset start index to where it would have started if this had been the
+		// initial state, then move it 50e9 generations forward.
+		startIx = startIx - (gen + 1) + 50e9
 		break
 	}
-	// ...and move initial steady state 50e9 generations forward.
 	sum = 0
 	for i := range state {
 		if state[i] == 1 {
-			sum += ixs[i] + 50000000000
+			sum += startIx + i
 		}
 	}
 
@@ -126,19 +117,12 @@ func pack(b []byte) byte {
 }
 
 // Naively grow state array in both directions
-func grow(state []byte, ixs []int) ([]byte, []int) {
+func grow(state []byte, startIx int) ([]byte, int) {
 	N := len(state)
-	M := N * 3
-	newState := make([]byte, M)
-	newIxs := make([]int, M)
+	newState := make([]byte, N*3)
+	newStartIx := startIx - N
 
-	ixFirst, ixLast := ixs[0], ixs[N-1]
-	for i := 0; i < N; i++ {
-		newIxs[i] = ixFirst - N + i
-		newIxs[N+i] = ixs[i]
-		newIxs[2*N+i] = ixLast + i + 1
-		newState[N+i] = state[i]
-	}
+	copy(newState[N:], state)
 
-	return newState, newIxs
+	return newState, newStartIx
 }
