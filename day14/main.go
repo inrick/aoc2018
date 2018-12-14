@@ -17,8 +17,12 @@ func main() {
 
 Outer:
 	for len(board) < input+10 || firstAppears == -1 {
-		newRecipes := Digits(board[c1] + board[c2])
-		board = append(board, newRecipes...)
+		sum := board[c1] + board[c2]
+		if sum < 10 {
+			board = append(board, sum)
+		} else {
+			board = append(board, sum/10, sum%10)
+		}
 		N := len(board)
 		c1 = (c1 + 1 + board[c1]) % N
 		c2 = (c2 + 1 + board[c2]) % N
@@ -56,9 +60,8 @@ func Digits(n int) []int {
 	N := 1 + int(math.Log10(float64(n)))
 	digits := make([]int, N)
 	for i := range digits {
-		a := int(math.Pow(10, float64(N-i)))
-		b := int(math.Pow(10, float64(N-i-1)))
-		digits[i] = (n % a) / b
+		digits[N-i-1] = n % 10
+		n /= 10
 	}
 	return digits
 }
