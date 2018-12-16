@@ -93,14 +93,13 @@ AssignReal:
 			delete(candidates, k)
 			// Purge opnum from all candidate lists
 			for k2, v2 := range candidates {
-				i := 0
-				for ; i < len(v2) && v2[i] != opnum; i++ {
+				v3 := v2[:0]
+				for _, x := range v2 {
+					if x != opnum {
+						v3 = append(v3, x)
+					}
 				}
-				if i == len(v2) {
-					continue
-				}
-				v2 = append(v2[:i], v2[i+1:]...)
-				candidates[k2] = v2
+				candidates[k2] = v3
 			}
 			goto AssignReal
 		}
