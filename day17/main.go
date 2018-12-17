@@ -97,12 +97,11 @@ func main() {
 		var forks []V2
 		visited := make(map[V2]bool)
 
-	Round:
 		for {
 			// Use mem = 8 as special state to start revisiting forks in the road.
 			if st.mem == 8 {
 				if len(forks) == 0 {
-					break Round
+					break
 				}
 				st.mem = 0
 				st.pos, forks = forks[0], forks[1:]
@@ -121,7 +120,7 @@ func main() {
 				}
 			case '~':
 				st.mem = 8
-				continue Round
+				continue
 			default:
 				panic(nil)
 			}
@@ -130,7 +129,7 @@ func main() {
 			below := Add(st.pos, Down)
 			if below.y == ylen {
 				st.mem = 8
-				continue Round
+				continue
 			}
 
 			// See if we can fall down
@@ -139,8 +138,7 @@ func main() {
 				st.mem = 0
 				st.dir = Down
 				st.pos = below
-				continue Round
-			default:
+				continue
 			}
 
 			// Otherwise try to move in current direction
